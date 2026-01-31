@@ -7,10 +7,10 @@ const ResultCard = ({ item, index }) => {
           <p className="text-muted" style={{ marginBottom: '10px' }}>{item.caption}</p>
           <div>
             <span className="badge badge-score">
-              Score: {item.score.toFixed(3)}
+              Match: {item.score.toFixed(2)}
             </span>
             <span className="badge badge-intent">
-              Intent: {item.intent}
+              When: {item.intent}
             </span>
             <span className="badge badge-time">
               {item.start.toFixed(1)}s - {item.end.toFixed(1)}s
@@ -39,7 +39,7 @@ const ResultCard = ({ item, index }) => {
         rel="noopener noreferrer"
         className="link-btn"
       >
-        🔗 Jump to time in full video
+        🔗 Open in YouTube
       </a>
     </div>
   )

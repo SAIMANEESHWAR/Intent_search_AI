@@ -1,4 +1,4 @@
-/* ---- Semantic Video Search - Black/dark theme ---- */
+/* ---- Semantic Video Search - Black/dark theme (high contrast) ---- */
 :root {
   --primary: #6366f1;
   --primary-hover: #818cf8;
@@ -7,15 +7,17 @@
   --accent-hover: #34d399;
   --surface: #0a0a0a;
   --surface-alt: #141414;
-  --border: #262626;
+  --surface-card: #1a1a1a;
+  --border: #333333;
+  --border-strong: #454545;
   --text: #fafafa;
-  --text-muted: #a3a3a3;
+  --text-muted: #c2c2c2;
   --radius: 12px;
   --radius-lg: 16px;
   --radius-full: 9999px;
-  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.5);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -94,7 +96,7 @@
 
 .header-nav-link:hover {
   color: var(--text);
-  background: var(--surface-alt);
+  background: var(--surface-card);
 }
 
 .header-nav-icon {
@@ -148,6 +150,33 @@
   opacity: 0.9;
 }
 
+/* ---- Hero ---- */
+.hero-wrapper {
+  background: linear-gradient(180deg, var(--surface) 0%, var(--surface-alt) 100%);
+  border-bottom: 1px solid var(--border);
+}
+
+.hero-rotating-word-container {
+  position: relative;
+  min-width: 140px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .hero-rotating-word-container {
+    min-width: 180px;
+  }
+}
+
+.hero-rotating-word {
+  position: absolute;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #22d3ee;
+  text-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+  will-change: transform, opacity;
+}
+
 body {
   font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--surface-alt);
@@ -164,6 +193,7 @@ body {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
   overflow: hidden;
+  border: 1px solid var(--border);
 }
 
 /* ---- Hero / Header (interface-style) ---- */
@@ -189,32 +219,50 @@ body {
 
 .content {
   padding: 32px;
+  background: var(--surface);
 }
 
-/* ---- Sections (card-style interface) ---- */
+.content .section:last-of-type {
+  margin-bottom: 0;
+}
+
+/* ---- Sections (card-style grid – high visibility) ---- */
 .section {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 24px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  padding: 28px 28px 28px 32px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border-strong);
+  border-left-width: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
+#load-video.section { border-left-color: #6366f1; }
+#basic-search.section { border-left-color: #10b981; }
+#rag-search.section { border-left-color: #8b5cf6; }
+
 .section:hover {
-  box-shadow: var(--shadow-md);
-  border-color: #404040;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  border-color: #555;
 }
 
 .section h2 {
   color: var(--text);
-  margin-bottom: 16px;
-  font-size: 1.25rem;
+  margin-bottom: 12px;
+  font-size: 1.3rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 10px;
+  letter-spacing: -0.02em;
+}
+
+.section .text-muted {
+  margin-bottom: 20px;
+  line-height: 1.55;
+  max-width: 72ch;
+  color: var(--text-muted);
 }
 
 /* ---- Search interface: input + button row ---- */
@@ -230,11 +278,16 @@ input[type="text"] {
   flex: 1;
   min-width: 260px;
   padding: 12px 16px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-radius: var(--radius);
   font-size: 15px;
+  color: var(--text);
   transition: border-color 0.2s, box-shadow 0.2s;
-  background: var(--surface);
+  background: #171717;
+}
+
+input[type="text"]::placeholder {
+  color: #9ca3af;
 }
 
 input[type="text"]:focus {
@@ -246,10 +299,10 @@ input[type="text"]:focus {
 input[type="text"]:disabled {
   background: var(--surface-alt);
   cursor: not-allowed;
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
-/* ---- Buttons ---- */
+/* ---- Buttons (high visibility) ---- */
 .btn {
   padding: 12px 20px;
   border: none;
@@ -262,16 +315,17 @@ input[type="text"]:disabled {
   align-items: center;
   gap: 8px;
   white-space: nowrap;
+  color: #fff;
 }
 
 .btn-primary {
   background: var(--primary);
-  color: white;
+  color: #fff;
 }
 
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-hover);
-  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
 .btn-primary:disabled {
@@ -281,12 +335,12 @@ input[type="text"]:disabled {
 
 .btn-secondary {
   background: var(--accent);
-  color: white;
+  color: #fff;
 }
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--accent-hover);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
 }
 
 .btn-secondary:disabled {
@@ -337,18 +391,18 @@ input[type="text"]:disabled {
 
 /* ---- Result cards (interface card style) ---- */
 .result-card {
-  background: var(--surface-alt);
+  background: #171717;
   border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 20px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   box-shadow: var(--shadow);
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .result-card:hover {
   box-shadow: var(--shadow-md);
-  border-color: #404040;
+  border-color: #555;
 }
 
 .result-header {
@@ -436,11 +490,11 @@ video {
 
 /* ---- AI / RAG explanation block ---- */
 .ai-explanation {
-  background: var(--surface-alt);
+  background: #171717;
   border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 20px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   border-left: 4px solid var(--primary);
 }
 
@@ -469,7 +523,7 @@ video {
 
 .suggestion-chip {
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-strong);
   color: var(--text);
   padding: 8px 16px;
   border-radius: var(--radius-full);
@@ -507,6 +561,7 @@ video {
   padding: 40px;
   color: var(--text-muted);
   font-size: 15px;
+  line-height: 1.5;
 }
 
 /* ---- Link button (e.g. Jump to full video) ---- */
@@ -546,10 +601,10 @@ video {
   font-size: 15px;
 }
 
-/* ---- Muted paragraph ---- */
+/* ---- Muted paragraph (readable contrast) ---- */
 .text-muted {
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   margin-bottom: 12px;
 }
 

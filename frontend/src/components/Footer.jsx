@@ -20,10 +20,10 @@ export default function Footer() {
         </div>
         <div className="footer-meta">
           <p className="footer-copy">
-            Semantic Video Search: ingest → frame extraction (5 FPS) → image captioning (encoder–decoder) → sentence embeddings (cosine similarity) → vector store. Temporal intent (before/after/during) for clip boundaries; RAG over retrieved captions for explanations and suggestion prompts.
+            Paste a YouTube link to add a video. Search with phrases like “before the goal” or “crowd celebrating.” Get short clips and simple explanations.
           </p>
           <p className="footer-legal">
-            © {new Date().getFullYear()} — Frame-level captioning, dense retrieval &amp; RAG over ChromaDB.
+            © {new Date().getFullYear()} — Video search by natural language.
           </p>
         </div>
       </div>

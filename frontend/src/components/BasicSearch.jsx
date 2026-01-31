@@ -30,9 +30,9 @@ const BasicSearch = () => {
 
   return (
     <section id="basic-search" className="section">
-      <h2>🔍 Intent-based retrieval</h2>
+      <h2>🔍 Search</h2>
       <p className="text-muted" style={{ marginBottom: '16px' }}>
-        Dense retrieval over frame captions in embedding space (cosine similarity). Temporal intent (before / after / during) segments the timeline and adjusts clip boundaries; results return trimmed MP4 clips and optional YouTube deep links.
+        Type what you’re looking for. Use phrases like “before the goal,” “crowd celebrating,” or “after the whistle.” You’ll get short clips that match.
       </p>
       <div className="input-group">
         <input
@@ -40,7 +40,7 @@ const BasicSearch = () => {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && !loading && handleSearch()}
-          placeholder="e.g. before goal, crowd celebrating, after whistle"
+          placeholder="e.g. before the goal, crowd celebrating"
           disabled={loading}
         />
         <button className="btn btn-primary" onClick={handleSearch} disabled={loading}>
@@ -66,7 +66,7 @@ const BasicSearch = () => {
         )}
         {!loading && results.length === 0 && query && (
           <div className="empty-state">
-            <p>No hits above threshold. Try rephrasing or lowering similarity threshold.</p>
+            <p>No matches found. Try different words or phrases.</p>
           </div>
         )}
         {!loading && results.map((item, index) => (

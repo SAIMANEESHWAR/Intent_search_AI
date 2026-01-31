@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 function Hero() {
   const [titleNumber, setTitleNumber] = useState(0);
   const titles = useMemo(
-    () => ["semantic", "RAG", "vector", "intent", "embedding"],
+    () => ["smart", "natural", "simple", "fast", "easy"],
     [],
   );
 
@@ -22,60 +22,61 @@ function Hero() {
   }, [titleNumber, titles]);
 
   return (
-    <div className="w-full">
+    <div className="w-full hero-wrapper">
       <div className="container mx-auto">
-        <div className="flex gap-8 py-20 lg:py-40 items-center justify-center flex-col">
+        <div className="flex gap-10 py-24 lg:py-44 items-center justify-center flex-col">
           <div>
-            <Button variant="secondary" size="sm" className="gap-4" asChild>
+            <Button variant="secondary" size="sm" className="gap-2 text-muted-foreground hover:text-foreground" asChild>
               <a href="#load-video">
-                Ingest pipeline docs <MoveRight className="w-4 h-4" />
+                How it works <MoveRight className="w-4 h-4" />
               </a>
             </Button>
           </div>
-          <div className="flex gap-4 flex-col">
-            <h1 className="text-5xl md:text-7xl max-w-2xl tracking-tighter text-center font-regular">
-              <span className="text-spektr-cyan-50">Video search,</span>
-              <span className="relative flex w-full justify-center overflow-hidden text-center md:pb-4 md:pt-1">
-                &nbsp;
+          <div className="flex gap-6 flex-col items-center">
+            <h1 className="text-5xl md:text-7xl max-w-2xl tracking-tighter text-center font-normal leading-tight">
+              <span className="text-foreground">Video search, </span>
+              <span
+                className="hero-rotating-word-container"
+                style={{ minHeight: '1.15em', display: 'inline-block', verticalAlign: 'bottom' }}
+              >
                 {titles.map((title, index) => (
                   <motion.span
                     key={index}
-                    className="absolute font-semibold"
-                    initial={{ opacity: 0, y: "-100" }}
-                    transition={{ type: "spring", stiffness: 50 }}
+                    className="hero-rotating-word"
+                    style={{ left: '50%', x: '-50%' }}
+                    initial={{ opacity: 0, y: -20 }}
+                    transition={{ type: "spring", stiffness: 80, damping: 18 }}
                     animate={
                       titleNumber === index
-                        ? {
-                            y: 0,
-                            opacity: 1,
-                          }
-                        : {
-                            y: titleNumber > index ? -150 : 150,
-                            opacity: 0,
-                          }
+                        ? { y: 0, opacity: 1 }
+                        : { y: titleNumber > index ? -20 : 20, opacity: 0 }
                     }
                   >
                     {title}
                   </motion.span>
                 ))}
               </span>
-              <span className="block text-center">-powered.</span>
+              <span className="text-foreground"> -powered.</span>
             </h1>
 
-            <p className="text-lg md:text-xl leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center">
-              Ingest a YouTube URL; we run frame extraction (ffmpeg, 5 FPS), Vit-GPT2 image captioning, and SBERT embeddings into ChromaDB (cosine space). 
-              Query with natural language and temporal intent (before/after/during); retrieve by dense similarity, get trimmed MP4 clips and RAG-generated explanations grounded in the vector store.
+            <p className="text-base md:text-lg leading-relaxed tracking-tight text-muted-foreground max-w-2xl text-center space-y-2">
+              <span className="block">
+                Paste a YouTube link. We turn the video into searchable moments.
+              </span>
+              <span className="block">
+                Search with your own words—like “before the goal” or “when they celebrate.” Get short clips and clear answers.
+              </span>
             </p>
           </div>
-          <div className="flex flex-row gap-3">
-            <Button size="lg" className="gap-4" variant="outline" asChild>
+          <div className="flex flex-row gap-3 flex-wrap justify-center">
+            <Button size="lg" className="gap-2" variant="outline" asChild>
               <a href="#load-video">
-                Ingest video <Video className="w-4 h-4" />
+                <Video className="w-4 h-4" /> Add a video
               </a>
             </Button>
-            <Button size="lg" className="gap-4" asChild>
+            <Button size="lg" className="gap-2 shadow-lg shadow-primary/20" asChild>
               <a href="#basic-search">
-                Run retrieval <MoveRight className="w-4 h-4" />
+                Search now <MoveRight className="w-4 h-4" />
               </a>
             </Button>
           </div>

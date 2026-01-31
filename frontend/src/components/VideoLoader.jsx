@@ -47,9 +47,9 @@ const VideoLoader = () => {
 
   return (
     <section id="load-video" className="section">
-      <h2>🔄 Ingest pipeline</h2>
+      <h2>🔄 Add a video</h2>
       <p className="text-muted" style={{ marginBottom: '16px' }}>
-        YouTube URL → yt-dlp download → ffmpeg frame extraction (5 FPS) → Vit-GPT2 image captioning (encoder–decoder) → SBERT sentence embeddings → ChromaDB persistence (cosine similarity). Index is built per video; run once before retrieval.
+        Paste a YouTube link below. We download the video, grab key moments, and make them searchable. Do this once per video, then you can search.
       </p>
       <div className="input-group">
         <input
@@ -57,7 +57,7 @@ const VideoLoader = () => {
           value={videoUrl}
           onChange={(e) => setVideoUrl(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && !loading && processVideo()}
-          placeholder="YouTube URL (e.g. https://www.youtube.com/watch?v=...)"
+          placeholder="Paste YouTube link here"
           disabled={loading}
         />
         <button
@@ -73,7 +73,7 @@ const VideoLoader = () => {
           ) : (
             <>
               <span>📥</span>
-              <span>Ingest video</span>
+              <span>Add video</span>
             </>
           )}
         </button>
