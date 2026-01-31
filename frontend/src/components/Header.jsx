@@ -8,6 +8,9 @@ const navLinks = [
 =======
   { href: '#rag-search', label: 'Smart search', icon: Sparkles },
   { href: '#production-planner', label: 'Production Planner', icon: ClipboardList },
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 ]
 
