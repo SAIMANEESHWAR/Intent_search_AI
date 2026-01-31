@@ -125,20 +125,7 @@ const VideoLoader = () => {
   }
 
   return (
-    <div className="upload-video-container">
-      {/* Badge */}
-      <div className="upload-badge">
-        <span>•</span> Video Upload & Processing
-      </div>
-
-      {/* Main Title */}
-      <h1 className="upload-main-title">
-        Upload Your <span className="title-highlight">Video</span>
-      </h1>
-      <p className="upload-subtitle">
-        Upload your video files or paste a YouTube URL. We extract frames, generate captions, and make them searchable with AI-powered semantic search.
-      </p>
-
+    <div className="upload-video-container enhanced-upload-section">
       {/* Upload Options */}
       <div className="upload-options">
         {/* YouTube URL Option */}

@@ -61,47 +61,25 @@ const ProductionPlanner = () => {
   // After result: show only tabs + content, no form
   if (result) {
     return (
-      <section id="production-planner" className="section">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-          <h2 style={{ color: 'var(--text)', margin: 0 }}>📋 Production Plan</h2>
+      <section id="production-planner" className="section enhanced-planner-section">
+        <div className="planner-header">
+          <h2 className="planner-result-title">📋 Production Plan</h2>
           <button
             type="button"
             onClick={handleNewPlan}
-            style={{
-              padding: '8px 16px',
-              borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)',
-              background: 'transparent',
-              color: 'var(--text)',
-              fontSize: '14px',
-              cursor: 'pointer'
-            }}
+            className="btn-new-plan"
           >
             ← New plan
           </button>
         </div>
 
-        <div style={{ 
-          borderBottom: '1px solid var(--border-strong)', 
-          marginBottom: '24px',
-          display: 'flex',
-          gap: '4px'
-        }}>
+        <div className="planner-tabs">
           {TABS.map(({ id, label, icon }) => (
             <button
               key={id}
               type="button"
               onClick={() => setActiveTab(id)}
-              style={{
-                padding: '12px 20px',
-                border: 'none',
-                borderBottom: activeTab === id ? '2px solid var(--primary)' : '2px solid transparent',
-                background: 'transparent',
-                color: activeTab === id ? 'var(--primary)' : 'var(--text-muted)',
-                fontSize: '15px',
-                fontWeight: 500,
-                cursor: 'pointer'
-              }}
+              className={`planner-tab ${activeTab === id ? 'active' : ''}`}
             >
               {icon} {label}
             </button>
@@ -117,15 +95,10 @@ const ProductionPlanner = () => {
 
   // No result: show form
   return (
-    <section id="production-planner" className="section">
-      <h2>📋 Production Planner</h2>
-      <p className="text-muted" style={{ marginBottom: '32px', fontSize: '1.1rem' }}>
-        Enter your script and budget to get a complete production breakdown with scene analysis, budget allocation, and safety requirements.
-      </p>
-
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: 500 }}>
+    <section id="production-planner" className="section enhanced-planner-section">
+      <form onSubmit={handleSubmit} className="enhanced-form">
+        <div className="form-group">
+          <label className="form-label">
             Script Text
           </label>
           <textarea
@@ -133,23 +106,12 @@ const ProductionPlanner = () => {
             onChange={(e) => setScript(e.target.value)}
             placeholder="Paste your movie script here..."
             disabled={loading}
-            style={{
-              width: '100%',
-              minHeight: '200px',
-              padding: '12px 16px',
-              border: '1px solid var(--border-strong)',
-              borderRadius: 'var(--radius)',
-              fontSize: '15px',
-              color: 'var(--text)',
-              background: '#171717',
-              fontFamily: 'inherit',
-              resize: 'vertical'
-            }}
+            className="form-textarea"
           />
         </div>
 
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: 500 }}>
+        <div className="form-group">
+          <label className="form-label">
             Total Budget (₹)
           </label>
           <input
@@ -160,15 +122,7 @@ const ProductionPlanner = () => {
             disabled={loading}
             min="0"
             step="1000"
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              border: '1px solid var(--border-strong)',
-              borderRadius: 'var(--radius)',
-              fontSize: '15px',
-              color: 'var(--text)',
-              background: '#171717'
-            }}
+            className="form-input"
           />
         </div>
 

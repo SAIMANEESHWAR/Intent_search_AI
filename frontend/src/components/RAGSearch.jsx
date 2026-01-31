@@ -55,12 +55,8 @@ const RAGSearch = () => {
   }
 
   return (
-    <section id="rag-search" className="section">
-      <h2>🔍 Multimodal Search</h2>
-      <p className="text-muted" style={{ fontSize: '1.1rem', marginBottom: '32px' }}>
-        Type your idea. We suggest better ways to search, then you pick one. You get short clips plus a simple explanation and summary.
-      </p>
-      <div className="input-group">
+    <section id="rag-search" className="section enhanced-search-section">
+      <div className="input-group enhanced-input-group">
         <input
           id="rag-query-input"
           type="text"
