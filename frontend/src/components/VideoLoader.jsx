@@ -125,9 +125,9 @@ const VideoLoader = () => {
 
   return (
     <section id="load-video" className="section">
-      <h2>🔄 Add video content</h2>
-      <p className="text-muted" style={{ marginBottom: '16px' }}>
-        Add a YouTube video or upload multiple video clips. We extract frames and make them searchable.
+      <h2>📥 Upload Video Content</h2>
+      <p className="text-muted" style={{ marginBottom: '32px', fontSize: '1.1rem' }}>
+        Add a YouTube video or upload multiple video clips. We extract frames and make them searchable with AI-powered semantic search.
       </p>
 
       {/* Tabs */}
