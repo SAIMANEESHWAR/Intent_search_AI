@@ -28,7 +28,13 @@ export const videoAPI = {
     return response.data
   },
 
-  // RAG search
+  // Get better-sentence suggestions before RAG search (step 1)
+  getRAGSuggestions: async (query) => {
+    const response = await api.post(`/rag-suggestions?query=${encodeURIComponent(query)}`)
+    return response.data
+  },
+
+  // RAG search (step 2: run after user picks a suggestion)
   ragSearch: async (query) => {
     const response = await api.post(`/rag-search?query=${encodeURIComponent(query)}`)
     return response.data

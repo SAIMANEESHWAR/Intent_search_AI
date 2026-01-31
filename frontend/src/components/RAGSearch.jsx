@@ -4,20 +4,46 @@ import ResultCard from './ResultCard'
 
 const RAGSearch = () => {
   const [query, setQuery] = useState('')
+  const [preSuggestions, setPreSuggestions] = useState(null)
   const [ragData, setRagData] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false)
 
-  const handleRAGSearch = async () => {
-    if (!query.trim()) {
+  // Step 1: Get better-sentence suggestions (before searching)
+  const handleGetSuggestions = async () => {
+    const q = query.trim()
+    if (!q) {
       alert('⚠️ Please enter a search query')
       return
     }
+    setLoadingSuggestions(true)
+    setPreSuggestions(null)
+    setRagData(null)
+    try {
+      const data = await videoAPI.getRAGSuggestions(q)
+      setPreSuggestions(data.suggestions || [])
+    } catch (error) {
+      console.error('RAG suggestions error:', error)
+      setPreSuggestions(null)
+      alert('❌ Error: ' + (error.message || 'Unknown error'))
+    } finally {
+      setLoadingSuggestions(false)
+    }
+  }
 
+  // Step 2: Run RAG search (after user picks a suggestion)
+  const handleRAGSearch = async (chosenPrompt) => {
+    const searchQuery = (chosenPrompt != null ? chosenPrompt : query).trim()
+    if (!searchQuery) {
+      alert('⚠️ Please enter or choose a search query')
+      return
+    }
+    if (chosenPrompt != null) setQuery(chosenPrompt)
+    setPreSuggestions(null)
     setLoading(true)
     setRagData(null)
-
     try {
-      const data = await videoAPI.ragSearch(query)
+      const data = await videoAPI.ragSearch(searchQuery)
       setRagData(data)
     } catch (error) {
       console.error('RAG search error:', error)
@@ -32,7 +58,7 @@ const RAGSearch = () => {
     <div className="section" style={{ background: 'linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%)', borderColor: '#4a90e2' }}>
       <h2>🤖 RAG-Enhanced Search</h2>
       <p style={{ color: '#555', marginBottom: '15px' }}>
-        Get AI-powered explanations, intelligent suggestions, and detailed summaries
+        Step 1: Enter a query and get better prompts. Step 2: Choose a prompt to search for more accurate results.
       </p>
       <div className="input-group">
         <input
@@ -40,15 +66,20 @@ const RAGSearch = () => {
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && !loading && handleRAGSearch()}
-          placeholder="Enter query (e.g., 'hesitant reaction before answering')"
-          disabled={loading}
+          onKeyPress={(e) => e.key === 'Enter' && !loadingSuggestions && !loading && handleGetSuggestions()}
+          placeholder="Enter query (e.g., 'crowd celebrating after goal')"
+          disabled={loadingSuggestions || loading}
         />
-        <button className="btn btn-secondary" onClick={handleRAGSearch} disabled={loading}>
-          {loading ? (
+        <button className="btn btn-secondary" onClick={handleGetSuggestions} disabled={loadingSuggestions || loading}>
+          {loadingSuggestions ? (
             <>
               <span className="loading"></span>
-              <span>Searching with AI...</span>
+              <span>Getting better prompts...</span>
+            </>
+          ) : loading ? (
+            <>
+              <span className="loading"></span>
+              <span>Searching...</span>
             </>
           ) : (
             <>
@@ -59,10 +90,35 @@ const RAGSearch = () => {
         </button>
       </div>
       <div className="results">
+        {loadingSuggestions && (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <div className="loading" style={{ margin: '0 auto', borderTopColor: '#28a745' }}></div>
+            <p style={{ marginTop: '20px', color: '#666' }}>Getting better prompts for more accurate results...</p>
+          </div>
+        )}
+        {preSuggestions && preSuggestions.length > 0 && !loading && (
+          <div className="ai-explanation" style={{ marginBottom: '20px' }}>
+            <h4>💡 Better prompts for more accurate results</h4>
+            <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '12px' }}>
+              Choose a prompt below — then we&apos;ll search the RAG model with it.
+            </p>
+            <div className="suggestions">
+              {preSuggestions.map((suggestion, idx) => (
+                <div
+                  key={idx}
+                  className="suggestion-chip"
+                  onClick={() => handleRAGSearch(suggestion)}
+                >
+                  {suggestion}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         {loading && (
           <div style={{ textAlign: 'center', padding: '40px' }}>
             <div className="loading" style={{ margin: '0 auto', borderTopColor: '#28a745' }}></div>
-            <p style={{ marginTop: '20px', color: '#666' }}>Generating AI explanations...</p>
+            <p style={{ marginTop: '20px', color: '#666' }}>Searching with AI...</p>
           </div>
         )}
         {ragData && (
@@ -78,19 +134,16 @@ const RAGSearch = () => {
               </p>
               {ragData.suggestions && ragData.suggestions.length > 0 && (
                 <>
-                  <h4>💡 Suggested Queries</h4>
+                  <h4>💡 Suggested prompts for best results</h4>
+                  <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
+                    Click a prompt to search with it and get the best results.
+                  </p>
                   <div className="suggestions">
                     {ragData.suggestions.map((suggestion, idx) => (
                       <div
                         key={idx}
                         className="suggestion-chip"
-                        onClick={() => {
-                          setQuery(suggestion)
-                          // Auto-search when suggestion is clicked
-                          setTimeout(() => {
-                            handleRAGSearch()
-                          }, 100)
-                        }}
+                        onClick={() => handleRAGSearch(suggestion)}
                       >
                         {suggestion}
                       </div>
@@ -110,7 +163,7 @@ const RAGSearch = () => {
               </>
             ) : (
               <div className="empty-state">
-                <p>No matching video clips found. Try the suggested queries above or rephrase your search.</p>
+                <p>No matching video clips found. Try one of the suggested prompts above for better results, or rephrase your search.</p>
               </div>
             )}
           </>

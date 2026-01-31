@@ -9,12 +9,15 @@ from pydantic import BaseModel
 # RAG imports
 try:
     from rag_search import rag_search
-    from vector_store import load_captions_to_vector_db, ensure_vector_db_loaded
+    from vector_store import load_captions_to_vector_db, ensure_vector_db_loaded, search_vector_db
+    from rag_generator import generate_suggestions_from_vector_db
     RAG_AVAILABLE = True
 except ImportError as e:
     print(f"⚠️ RAG modules not available: {e}")
     RAG_AVAILABLE = False
     ensure_vector_db_loaded = None
+    search_vector_db = None
+    generate_suggestions_from_vector_db = None
 
 class VideoRequest(BaseModel):
     url: str
@@ -91,9 +94,19 @@ def search(query: str):
 def intent(query: str):
     return intent_search(query)
 
-# RAG endpoint
+# RAG endpoints
 if RAG_AVAILABLE:
+    @app.post("/rag-suggestions")
+    def rag_suggestions_endpoint(query: str):
+        """Return suggestions with proper intent + emotion, grounded in vector DB captions."""
+        vector_results = []
+        if search_vector_db:
+            # Lower threshold so we get related captions for suggestion context
+            vector_results = search_vector_db(query, top_k=15, threshold=0.25)
+        suggestions = generate_suggestions_from_vector_db(query, vector_results) if generate_suggestions_from_vector_db else []
+        return {"query": query, "suggestions": suggestions}
+
     @app.post("/rag-search")
     def rag_search_endpoint(query: str):
-        """RAG-enhanced search with explanations"""
+        """RAG-enhanced search with explanations (run after user picks a suggestion)."""
         return rag_search(query)
