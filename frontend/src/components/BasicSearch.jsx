@@ -56,9 +56,9 @@ const BasicSearch = () => {
       </div>
       <div className="results">
         {loading && (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div className="loading" style={{ margin: '0 auto', borderTopColor: '#667eea' }}></div>
-            <p style={{ marginTop: '20px', color: '#666' }}>Searching...</p>
+          <div className="loading-block">
+            <div className="loading"></div>
+            <p>Searching...</p>
           </div>
         )}
         {!loading && results.length === 0 && query && (

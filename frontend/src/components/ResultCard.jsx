@@ -3,8 +3,8 @@ const ResultCard = ({ item, index }) => {
     <div className="result-card">
       <div className="result-header">
         <div className="result-info">
-          <h3>Match {index + 1}</h3>
-          <p style={{ marginBottom: '10px', color: '#666' }}>{item.caption}</p>
+          <h3>Match {index}</h3>
+          <p className="text-muted" style={{ marginBottom: '10px' }}>{item.caption}</p>
           <div>
             <span className="badge badge-score">
               Score: {item.score.toFixed(3)}

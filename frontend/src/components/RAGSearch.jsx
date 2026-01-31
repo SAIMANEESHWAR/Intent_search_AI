@@ -55,9 +55,9 @@ const RAGSearch = () => {
   }
 
   return (
-    <div className="section" style={{ background: 'linear-gradient(135deg, #e8f4f8 0%, #d1e7dd 100%)', borderColor: '#4a90e2' }}>
+    <div className="section">
       <h2>🤖 RAG-Enhanced Search</h2>
-      <p style={{ color: '#555', marginBottom: '15px' }}>
+      <p className="text-muted">
         Step 1: Enter a query and get better prompts. Step 2: Choose a prompt to search for more accurate results.
       </p>
       <div className="input-group">
@@ -91,15 +91,15 @@ const RAGSearch = () => {
       </div>
       <div className="results">
         {loadingSuggestions && (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div className="loading" style={{ margin: '0 auto', borderTopColor: '#28a745' }}></div>
-            <p style={{ marginTop: '20px', color: '#666' }}>Getting better prompts for more accurate results...</p>
+          <div className="loading-block">
+            <div className="loading"></div>
+            <p>Getting better prompts for more accurate results...</p>
           </div>
         )}
         {preSuggestions && preSuggestions.length > 0 && !loading && (
           <div className="ai-explanation" style={{ marginBottom: '20px' }}>
             <h4>💡 Better prompts for more accurate results</h4>
-            <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '12px' }}>
+            <p className="text-muted">
               Choose a prompt below — then we&apos;ll search the RAG model with it.
             </p>
             <div className="suggestions">
@@ -116,26 +116,26 @@ const RAGSearch = () => {
           </div>
         )}
         {loading && (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <div className="loading" style={{ margin: '0 auto', borderTopColor: '#28a745' }}></div>
-            <p style={{ marginTop: '20px', color: '#666' }}>Searching with AI...</p>
+          <div className="loading-block">
+            <div className="loading"></div>
+            <p>Searching with AI...</p>
           </div>
         )}
         {ragData && (
           <>
             <div className="ai-explanation">
               <h4>💡 AI Explanation</h4>
-              <p style={{ lineHeight: '1.6', marginBottom: '15px' }}>
+              <p className="text-muted" style={{ lineHeight: 1.6 }}>
                 {ragData.explanation || 'No explanation available.'}
               </p>
               <h4>📊 Summary</h4>
-              <p style={{ lineHeight: '1.6', marginBottom: '15px' }}>
+              <p className="text-muted" style={{ lineHeight: 1.6 }}>
                 {ragData.summary || 'No summary available.'}
               </p>
               {ragData.suggestions && ragData.suggestions.length > 0 && (
                 <>
                   <h4>💡 Suggested prompts for best results</h4>
-                  <p style={{ fontSize: '0.9em', color: '#666', marginBottom: '10px' }}>
+                  <p className="text-muted">
                     Click a prompt to search with it and get the best results.
                   </p>
                   <div className="suggestions">
@@ -154,7 +154,7 @@ const RAGSearch = () => {
             </div>
             {ragData.results && ragData.results.length > 0 ? (
               <>
-                <h3 style={{ color: '#4a90e2', marginBottom: '15px' }}>
+                <h3>
                   🎬 Found {ragData.count} matching video clips:
                 </h3>
                 {ragData.results.map((item, index) => (
