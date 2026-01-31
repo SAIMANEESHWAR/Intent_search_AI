@@ -148,13 +148,13 @@ const ProductionPlanner = () => {
 
         <div style={{ marginBottom: '16px' }}>
           <label style={{ display: 'block', marginBottom: '8px', color: 'var(--text)', fontWeight: 500 }}>
-            Total Budget ($)
+            Total Budget (₹)
           </label>
           <input
             type="number"
             value={budget}
             onChange={(e) => setBudget(e.target.value)}
-            placeholder="Enter total production budget"
+            placeholder="Enter total budget in ₹"
             disabled={loading}
             min="0"
             step="1000"

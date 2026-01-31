@@ -30,15 +30,16 @@ const BudgetDashboard = ({ data }) => {
     value: value
   }))
 
-  const formatCurrency = (value) => `$${Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const formatCurrency = (value) => `₹${Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 
-  // Compact form for Y-axis ticks so budget values show fully (no truncation like ",000.00")
+  // Compact form for Y-axis ticks so budget values show fully (no truncation)
   const formatAxisCurrency = (value) => {
     const n = Number(value)
-    if (Number.isNaN(n)) return '$0'
-    if (n >= 1000000) return `$${(n / 1e6).toFixed(1)}M`
-    if (n >= 1000) return `$${(n / 1000).toFixed(0)}k`
-    return `$${n.toFixed(0)}`
+    if (Number.isNaN(n)) return '₹0'
+    if (n >= 10000000) return `₹${(n / 10000000).toFixed(1)}Cr`
+    if (n >= 100000) return `₹${(n / 100000).toFixed(1)}L`
+    if (n >= 1000) return `₹${(n / 1000).toFixed(0)}k`
+    return `₹${n.toFixed(0)}`
   }
 
   return (

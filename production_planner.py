@@ -144,7 +144,7 @@ def generate_production_plan(script_text: str, total_budget: float):
         }
     
     try:
-        prompt = f"{PRODUCTION_PROMPT}\n\nScript:\n{script_text}\n\nTotal Budget: ${total_budget:,.2f}"
+        prompt = f"{PRODUCTION_PROMPT}\n\nScript:\n{script_text}\n\nTotal Budget: ₹{total_budget:,.2f} (Indian Rupees)"
         
         model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
         
