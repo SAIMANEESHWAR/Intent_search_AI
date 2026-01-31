@@ -1,6 +1,5 @@
 # vector_store.py
 import chromadb
-from chromadb.config import Settings
 from sentence_transformers import SentenceTransformer
 import os
 import re
@@ -8,15 +7,13 @@ import re
 # Initialize embedding model (same as semantic_search.py)
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Initialize ChromaDB
-client = chromadb.Client(Settings(
-    chroma_db_impl="duckdb+parquet",
-    persist_directory="./chroma_db"  # Data persists here
-))
+# Initialize ChromaDB (new client API - PersistentClient for local persistence)
+client = chromadb.PersistentClient(path="./chroma_db")
 
+# Use cosine distance so "1 - distance" = cosine similarity (matches sentence-transformers)
 collection = client.get_or_create_collection(
     name="video_captions",
-    metadata={"description": "Video frame captions and embeddings"}
+    metadata={"hnsw:space": "cosine", "description": "Video frame captions and embeddings"}
 )
 
 def load_captions_to_vector_db():

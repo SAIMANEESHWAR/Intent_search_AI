@@ -1,20 +1,62 @@
-
+# Python
 venv/
+.venv/
+env/
 __pycache__/
-*.pyc
-.DS_Store
-.env
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
 
-# Generated media
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Generated media and processing output
 *.mp4
+*.part
 frames/
 clips/
 captions.txt
 video.en.srt
 video.mp4.part
 
-# Generated config
+# Config (can contain local paths)
 video_config.json
 
-# Vector database
+# Vector database (ChromaDB)
 chroma_db/
+
+# Logs and temp
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.cache/
