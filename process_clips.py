@@ -144,6 +144,23 @@ def process_clips_logic(file_data, update_status=default_logger):
         else:
             update_status("📝 No new frames to caption.")
 
+        # 6. Extract and transcribe audio for each clip
+        for clip_id, video_path in saved_paths:
+            try:
+                from audio_processor import process_audio_for_video
+                update_status(f"🎵 Processing audio for clip {clip_id}...")
+                prefix = f"clip_{clip_id}"
+                segments = process_audio_for_video(video_path, prefix, update_status)
+                if segments:
+                    update_status(f"✅ Processed {len(segments)} audio segments for clip {clip_id}")
+                else:
+                    update_status(f"⚠️ No audio segments extracted for clip {clip_id}")
+            except ImportError:
+                update_status("⚠️ Audio processing not available (install openai-whisper)")
+                break
+            except Exception as e:
+                update_status(f"⚠️ Audio processing error for clip {clip_id}: {e}")
+
         update_status("COMPLETED")
 
     except Exception as e:

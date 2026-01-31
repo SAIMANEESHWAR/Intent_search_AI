@@ -234,6 +234,20 @@ def process_video_logic(youtube_url, update_status=default_logger):
         else:
             update_status("📝 No new frames to caption.")
 
+        # 6. Extract and transcribe audio
+        try:
+            from audio_processor import process_audio_for_video
+            update_status("🎵 Processing audio...")
+            segments = process_audio_for_video(youtube_video_path, youtube_prefix, update_status)
+            if segments:
+                update_status(f"✅ Processed {len(segments)} audio segments")
+            else:
+                update_status("⚠️ No audio segments extracted")
+        except ImportError:
+            update_status("⚠️ Audio processing not available (install openai-whisper)")
+        except Exception as e:
+            update_status(f"⚠️ Audio processing error: {e}")
+
         update_status("COMPLETED")
         
     except Exception as e:

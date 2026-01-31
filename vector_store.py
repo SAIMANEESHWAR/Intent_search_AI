@@ -9,6 +9,7 @@ import re
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_PATH = os.path.join(BASE_DIR, "chroma_db")
 CAPTIONS_PATH = os.path.join(BASE_DIR, "captions.txt")
+TRANSCRIPTIONS_PATH = os.path.join(BASE_DIR, "audio_transcriptions.txt")
 
 # Initialize embedding model (same as semantic_search.py)
 embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
@@ -20,6 +21,12 @@ client = chromadb.PersistentClient(path=CHROMA_PATH)
 collection = client.get_or_create_collection(
     name="video_captions",
     metadata={"hnsw:space": "cosine", "description": "Video frame captions and embeddings"}
+)
+
+# Audio transcriptions collection (separate from video captions)
+audio_collection = client.get_or_create_collection(
+    name="audio_transcriptions",
+    metadata={"hnsw:space": "cosine", "description": "Audio transcriptions and embeddings"}
 )
 
 def load_captions_to_vector_db(append_only=False):
@@ -107,6 +114,9 @@ def ensure_vector_db_loaded():
         if collection.count() == 0 and os.path.exists(CAPTIONS_PATH):
             print("🔄 Vector DB empty but captions.txt found — loading for RAG search...")
             load_captions_to_vector_db()
+        if audio_collection.count() == 0 and os.path.exists(TRANSCRIPTIONS_PATH):
+            print("🔄 Audio Vector DB empty but audio_transcriptions.txt found — loading...")
+            load_transcriptions_to_vector_db()
     except Exception as e:
         print(f"⚠️ ensure_vector_db_loaded: {e}")
 
@@ -207,5 +217,178 @@ def search_vector_db(query, top_k=10, threshold=0.4):
         
     except Exception as e:
         print(f"⚠️ Error searching vector database: {e}")
+        return []
+
+
+def load_transcriptions_to_vector_db(append_only=False):
+    """
+    Load audio_transcriptions.txt into vector database.
+    append_only: If True, only add new transcriptions (by ID), don't clear existing.
+    """
+    if not os.path.exists(TRANSCRIPTIONS_PATH):
+        print("⚠️ audio_transcriptions.txt not found.")
+        return
+
+    transcriptions = []
+    trans_ids = []
+    timestamps = []
+
+    with open(TRANSCRIPTIONS_PATH, "r", encoding="utf-8") as f:
+        for line in f:
+            if ": " in line:
+                trans_id, text = line.strip().split(": ", 1)
+                trans_ids.append(trans_id)
+                transcriptions.append(text)
+                
+                # Extract timestamp from ID (format: prefix_audio_123.45)
+                try:
+                    match = re.search(r"_audio_([\d.]+)$", trans_id)
+                    if match:
+                        timestamps.append(float(match.group(1)))
+                    else:
+                        timestamps.append(0.0)
+                except:
+                    timestamps.append(0.0)
+
+    if not transcriptions:
+        print("⚠️ No transcriptions found.")
+        return
+
+    # If append_only, skip IDs already in the DB
+    if append_only:
+        try:
+            existing = set(audio_collection.get()["ids"])
+            to_add = [(t, tid, ts) for t, tid, ts in zip(transcriptions, trans_ids, timestamps) if tid not in existing]
+            if not to_add:
+                print("✅ No new transcriptions to add to vector DB")
+                return
+            transcriptions, trans_ids, timestamps = zip(*to_add)
+            transcriptions, trans_ids, timestamps = list(transcriptions), list(trans_ids), list(timestamps)
+            print(f"🔄 Adding {len(transcriptions)} new transcriptions (skipping {len(existing)} existing)...")
+        except Exception as e:
+            print(f"⚠️ Could not check existing: {e}, doing full reload")
+            append_only = False
+
+    if not append_only:
+        try:
+            all_ids = audio_collection.get()["ids"]
+            if all_ids:
+                audio_collection.delete(ids=all_ids)
+        except Exception as e:
+            print(f"⚠️ Could not clear existing audio data: {e}")
+
+    print(f"🔄 Generating embeddings for {len(transcriptions)} transcriptions...")
+    embeddings = embedding_model.encode(transcriptions).tolist()
+
+    batch_size = 100
+    print(f"💾 Storing {len(transcriptions)} transcriptions in vector database...")
+    for i in range(0, len(transcriptions), batch_size):
+        batch_end = min(i + batch_size, len(transcriptions))
+        
+        # Extract clip_id from transcription ID
+        clip_ids = []
+        for tid in trans_ids[i:batch_end]:
+            m = re.match(r"clip_(\d+)_audio", tid)
+            if m:
+                clip_ids.append(f"clip_{m.group(1)}")
+            else:
+                m = re.match(r"youtube_(\d+)_audio", tid)
+                if m:
+                    clip_ids.append(f"youtube_{m.group(1)}")
+                else:
+                    clip_ids.append("0")
+        
+        audio_collection.add(
+            embeddings=embeddings[i:batch_end],
+            documents=transcriptions[i:batch_end],
+            metadatas=[
+                {"transcription_id": tid, "timestamp": ts, "clip_id": cid}
+                for tid, ts, cid in zip(trans_ids[i:batch_end], timestamps[i:batch_end], clip_ids)
+            ],
+            ids=trans_ids[i:batch_end]
+        )
+        print(f"  Stored {batch_end}/{len(transcriptions)} transcriptions...")
+    print(f"✅ Stored {len(transcriptions)} transcriptions in vector database")
+
+
+def search_audio_vector_db(query, top_k=10, threshold=0.4):
+    """Search audio transcriptions vector database"""
+    try:
+        count = audio_collection.count()
+        if count == 0:
+            return []
+        
+        query_embedding = embedding_model.encode(query).tolist()
+        
+        results = audio_collection.query(
+            query_embeddings=[query_embedding],
+            n_results=min(50, count),
+            include=["documents", "metadatas", "distances"]
+        )
+        
+        hits = []
+        for doc, metadata, distance in zip(
+            results["documents"][0],
+            results["metadatas"][0],
+            results["distances"][0]
+        ):
+            score = 1 - distance
+            
+            if score < threshold:
+                continue
+            
+            hits.append({
+                "transcription_id": metadata.get("transcription_id", ""),
+                "text": doc,
+                "score": score,
+                "timestamp": metadata.get("timestamp", 0.0),
+                "clip_id": metadata.get("clip_id", "0")
+            })
+        
+        # Sort and cluster similar to video search
+        hits.sort(key=lambda x: (x["clip_id"], x["timestamp"]))
+        
+        clips = []
+        if not hits:
+            return []
+        
+        current_clip = [hits[0]]
+        GAP_THRESHOLD = 2.0  # Slightly larger gap for audio (speech segments can be longer)
+        
+        for hit in hits[1:]:
+            same_clip = hit["clip_id"] == current_clip[-1]["clip_id"]
+            time_gap_ok = hit["timestamp"] - current_clip[-1]["timestamp"] <= GAP_THRESHOLD
+            if same_clip and time_gap_ok:
+                current_clip.append(hit)
+            else:
+                best_hit = max(current_clip, key=lambda x: x["score"])
+                clips.append({
+                    "start": current_clip[0]["timestamp"],
+                    "end": current_clip[-1]["timestamp"],
+                    "score": best_hit["score"],
+                    "caption": best_hit["text"],
+                    "best_frame": "",  # Audio doesn't have frames, but we need this for compatibility
+                    "frame_count": len(current_clip),
+                    "source": "audio"  # Mark as audio source
+                })
+                current_clip = [hit]
+        
+        if current_clip:
+            best_hit = max(current_clip, key=lambda x: x["score"])
+            clips.append({
+                "start": current_clip[0]["timestamp"],
+                "end": current_clip[-1]["timestamp"],
+                "score": best_hit["score"],
+                "caption": best_hit["text"],
+                "best_frame": "",
+                "frame_count": len(current_clip),
+                "source": "audio"
+            })
+        
+        clips.sort(key=lambda x: x["score"], reverse=True)
+        return clips[:5]
+        
+    except Exception as e:
+        print(f"⚠️ Error searching audio vector database: {e}")
         return []
 

@@ -1,5 +1,5 @@
 # rag_search.py
-from vector_store import search_vector_db
+from vector_store import search_vector_db, search_audio_vector_db
 from rag_generator import generate_explanation, generate_suggestions, generate_summary
 from video_utils import ensure_clip, _get_source_video_for_frame
 import json
@@ -27,10 +27,41 @@ def get_full_video_url(best_frame: str, start: float):
     return f"{url}&t={int(start)}s"
 
 def rag_search(query: str):
-    """RAG-enhanced search with explanations"""
+    """RAG-enhanced search with explanations - searches both video captions and audio transcriptions"""
     
-    # Step 1: Retrieve (using vector DB)
-    search_results = search_vector_db(query, top_k=10, threshold=0.4)
+    # Step 1: Retrieve from both video captions and audio transcriptions
+    video_results = search_vector_db(query, top_k=10, threshold=0.4)
+    audio_results = search_audio_vector_db(query, top_k=10, threshold=0.4)
+    
+    # Merge and deduplicate results (prioritize higher scores)
+    all_results = []
+    seen_timestamps = set()
+    
+    # Add video results
+    for result in video_results:
+        key = (result.get("clip_id", "0"), round(result["start"], 1))
+        if key not in seen_timestamps:
+            all_results.append(result)
+            seen_timestamps.add(key)
+    
+    # Add audio results (may have different timestamps even for same clip)
+    for result in audio_results:
+        key = (result.get("clip_id", "0"), round(result["start"], 1))
+        if key not in seen_timestamps:
+            # For audio results, we need to find a corresponding frame
+            # Use the timestamp to find nearest frame
+            frame_num = int(result["start"] * 5)  # 5 FPS
+            clip_id = result.get("clip_id", "0")
+            if clip_id.startswith("clip_"):
+                result["best_frame"] = f"{clip_id}_frame_{frame_num:04d}.jpg"
+            elif clip_id.startswith("youtube_"):
+                result["best_frame"] = f"{clip_id}_frame_{frame_num:04d}.jpg"
+            all_results.append(result)
+            seen_timestamps.add(key)
+    
+    # Sort by score and take top results
+    all_results.sort(key=lambda x: x["score"], reverse=True)
+    search_results = all_results[:10]  # Top 10 combined results
     
     # Step 2: Apply temporal intent (reuse existing logic)
     intent_results = []
@@ -85,7 +116,8 @@ def rag_search(query: str):
                 "score": r["score"],
                 "video_url": f"http://localhost:8000/clips/{clip_filename}",
                 "full_video_url": full_url,
-                "is_youtube": get_video_config().get("mode", "youtube") != "clips"
+                "is_youtube": get_video_config().get("mode", "youtube") != "clips",
+                "source": r.get("source", "video")  # "video" or "audio"
             })
     
     # Step 3: Generate explanations (RAG)

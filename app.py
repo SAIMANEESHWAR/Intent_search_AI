@@ -47,6 +47,12 @@ def startup():
     os.makedirs("frames", exist_ok=True)
     if RAG_AVAILABLE and ensure_vector_db_loaded:
         ensure_vector_db_loaded()
+        # Also load audio transcriptions if available
+        try:
+            from vector_store import load_transcriptions_to_vector_db
+            load_transcriptions_to_vector_db(append_only=True)
+        except Exception as e:
+            print(f"⚠️ Could not load audio transcriptions: {e}")
 
 
 from semantic_search import search_frames, load_data
@@ -69,6 +75,9 @@ def update_status(msg, append_vector_db=True):
             try:
                 # ALWAYS use append_only=True to preserve historical data
                 load_captions_to_vector_db(append_only=True)
+                # Also load audio transcriptions
+                from vector_store import load_transcriptions_to_vector_db
+                load_transcriptions_to_vector_db(append_only=True)
             except Exception as e:
                 print(f"⚠️ Vector DB load failed: {e}")
         processing_status = {"state": "completed", "message": "Done! Search now."}

@@ -8,3 +8,5 @@ yt-dlp
 chromadb
 python-dotenv
 groq
+openai-whisper
+ffmpeg-python
