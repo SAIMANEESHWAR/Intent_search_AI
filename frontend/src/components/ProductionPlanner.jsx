@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { productionAPI } from '../services/api'
 import BudgetDashboard from './BudgetDashboard'
 import SceneBreakdown from './SceneBreakdown'
+import RiskDashboard from './RiskDashboard'
 
 const TABS = [
   { id: 'budget', label: 'Budget', icon: '💰' },
-  { id: 'scenes', label: 'Scene Breakdown', icon: '🎬' }
+  { id: 'scenes', label: 'Scene Breakdown', icon: '🎬' },
+  { id: 'risk', label: 'Risk Analyzer', icon: '⚠️' }
 ]
 
 const ProductionPlanner = () => {
