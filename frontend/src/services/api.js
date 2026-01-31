@@ -59,9 +59,17 @@ export const videoAPI = {
 }
 
 export const productionAPI = {
-  // Generate production plan
-  generatePlan: async (script, budget) => {
-    const response = await api.post('/production-plan', { script, budget })
+  // Extract actor/character names from script (returns { actor_names: [...] })
+  extractActors: async (script) => {
+    const response = await api.post('/production-plan/extract-actors', { script })
+    return response.data
+  },
+
+  // Generate production plan (actors: [{ name, daily_rate, available_days, scene_numbers }], number_of_scenes optional)
+  generatePlan: async (script, budget, actors = [], number_of_scenes = null) => {
+    const payload = { script, budget, actors }
+    if (number_of_scenes != null && number_of_scenes > 0) payload.number_of_scenes = number_of_scenes
+    const response = await api.post('/production-plan', payload)
     return response.data
   },
 }

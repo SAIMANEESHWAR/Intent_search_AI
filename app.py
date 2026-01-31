@@ -26,18 +26,31 @@ except ImportError as e:
 
 # Production Planner imports
 try:
-    from production_planner import generate_production_plan
+    from production_planner import generate_production_plan, extract_actor_names_from_script
     PRODUCTION_PLANNER_AVAILABLE = True
 except ImportError as e:
     print(f"⚠️ Production planner not available: {e}")
     PRODUCTION_PLANNER_AVAILABLE = False
+    extract_actor_names_from_script = None
 
 class VideoRequest(BaseModel):
     url: str
 
+class ActorInput(BaseModel):
+    name: str
+    daily_rate: float
+    available_days: int
+    scene_numbers: list[int] | None = None  # which scenes this actor is in (1-based)
+
+class ExtractActorsRequest(BaseModel):
+    """Only script needed for character extraction."""
+    script: str
+
 class ProductionPlanRequest(BaseModel):
     script: str
     budget: float
+    number_of_scenes: int | None = None  # user-defined scene count; AI divides script into this many
+    actors: list[ActorInput] | None = None
 
 app = FastAPI()
 
@@ -236,7 +249,23 @@ if RAG_AVAILABLE:
 
 # Production Planner endpoints
 if PRODUCTION_PLANNER_AVAILABLE:
+    @app.post("/production-plan/extract-actors")
+    def extract_actors_endpoint(req: ExtractActorsRequest):
+        """Extract actor/character names from script. Body: { script }. Returns { actor_names: [...] }."""
+        return extract_actor_names_from_script(req.script)
+
     @app.post("/production-plan")
     def production_plan_endpoint(req: ProductionPlanRequest):
-        """Generate production breakdown from script and budget"""
-        return generate_production_plan(req.script, req.budget)
+        """Generate production breakdown from script, budget, optional number_of_scenes, and actors (with scene_numbers) for scheduling."""
+        actors_list = None
+        if req.actors:
+            actors_list = [
+                {
+                    "name": a.name,
+                    "daily_rate": a.daily_rate,
+                    "available_days": a.available_days,
+                    "scene_numbers": a.scene_numbers or [],
+                }
+                for a in req.actors
+            ]
+        return generate_production_plan(req.script, req.budget, actors_list, req.number_of_scenes)
