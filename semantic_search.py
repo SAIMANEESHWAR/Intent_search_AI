@@ -51,15 +51,21 @@ def search(query, top_k=10, threshold=0.4):
             continue
         
         idx_val = int(idx)
+        frame = frames[idx_val]
+        nums = re.findall(r"\d+", frame)
+        ts = int(nums[-1]) / 5.0 if nums else 0.0
+        m = re.match(r"clip_(\d+)_frame", frame)
+        clip_id = m.group(1) if m else "0"
         hits.append({
-            "frame": frames[idx_val],
+            "frame": frame,
             "score": score_val,
             "caption": captions[idx_val],
-            "timestamp": int(re.findall(r"\d+", frames[idx_val])[0]) / 5.0
+            "timestamp": ts,
+            "clip_id": clip_id
         })
 
-    # Sort by timestamp to enable clustering
-    hits.sort(key=lambda x: x["timestamp"])
+    # Sort by clip_id then timestamp for clustering
+    hits.sort(key=lambda x: (x["clip_id"], x["timestamp"]))
 
     # Cluster hits into clips
     clips = []
@@ -71,7 +77,9 @@ def search(query, top_k=10, threshold=0.4):
     GAP_THRESHOLD = 1.0 
 
     for hit in hits[1:]:
-        if hit["timestamp"] - current_clip[-1]["timestamp"] <= GAP_THRESHOLD:
+        same_clip = hit["clip_id"] == current_clip[-1]["clip_id"]
+        time_gap_ok = hit["timestamp"] - current_clip[-1]["timestamp"] <= GAP_THRESHOLD
+        if same_clip and time_gap_ok:
             current_clip.append(hit)
         else:
             # Consolidate clip

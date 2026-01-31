@@ -1,16 +1,30 @@
 # rag_search.py
 from vector_store import search_vector_db
 from rag_generator import generate_explanation, generate_suggestions, generate_summary
-from video_utils import ensure_clip
+from video_utils import ensure_clip, _get_source_video_for_frame
 import json
+import os
 
-def get_youtube_url():
+def get_video_config():
     try:
         with open("video_config.json", "r") as f:
-            config = json.load(f)
-            return config.get("url", "https://www.youtube.com/watch?v=zhEWqfP6V_w")
+            return json.load(f)
     except:
-        return "https://www.youtube.com/watch?v=zhEWqfP6V_w"
+        return {}
+
+def get_full_video_url(best_frame: str, start: float):
+    """Return URL for 'full video' - YouTube link or source clip depending on mode."""
+    config = get_video_config()
+    mode = config.get("mode", "youtube")
+    if mode == "clips":
+        source_path, _ = _get_source_video_for_frame(best_frame)
+        if source_path and os.path.exists(source_path):
+            # Use actual filename (could be .mp4, .mov, etc.)
+            basename = os.path.basename(source_path)
+            return f"http://localhost:8000/source_clips/{basename}"
+    # YouTube mode
+    url = config.get("url", "https://www.youtube.com/watch?v=zhEWqfP6V_w")
+    return f"{url}&t={int(start)}s"
 
 def rag_search(query: str):
     """RAG-enhanced search with explanations"""
@@ -58,6 +72,8 @@ def rag_search(query: str):
                 adj_start = max(0, adj_start - diff / 2)
                 adj_end = adj_end + diff / 2
             
+            clip_filename = ensure_clip(adj_start, adj_end, r["best_frame"])
+            full_url = get_full_video_url(r["best_frame"], adj_start)
             intent_results.append({
                 "best_frame": r["best_frame"],
                 "caption": r["caption"],
@@ -67,8 +83,9 @@ def rag_search(query: str):
                 "start": adj_start,
                 "end": adj_end,
                 "score": r["score"],
-                "video_url": f"http://localhost:8000/clips/{ensure_clip(adj_start, adj_end)}",
-                "full_video_url": f"{get_youtube_url()}&t={int(adj_start)}s"
+                "video_url": f"http://localhost:8000/clips/{clip_filename}",
+                "full_video_url": full_url,
+                "is_youtube": get_video_config().get("mode", "youtube") != "clips"
             })
     
     # Step 3: Generate explanations (RAG)

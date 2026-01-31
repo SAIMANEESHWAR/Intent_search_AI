@@ -56,7 +56,7 @@ const RAGSearch = () => {
 
   return (
     <section id="rag-search" className="section">
-      <h2>🤖 Smart search</h2>
+      <h2>🤖 Multi modal search</h2>
       <p className="text-muted">
         Type your idea. We suggest better ways to search, then you pick one. You get short clips plus a simple explanation and summary.
       </p>
@@ -84,7 +84,7 @@ const RAGSearch = () => {
           ) : (
             <>
               <span>✨</span>
-              <span>Smart search</span>
+              <span>Multi modal search</span>
             </>
           )}
         </button>

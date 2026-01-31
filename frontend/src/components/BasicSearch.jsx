@@ -52,7 +52,7 @@ const BasicSearch = () => {
           ) : (
             <>
               <span>🔎</span>
-              <span>Retrieve</span>
+              <span>Search</span>
             </>
           )}
         </button>

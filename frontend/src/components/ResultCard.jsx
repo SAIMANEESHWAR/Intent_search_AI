@@ -39,7 +39,7 @@ const ResultCard = ({ item, index }) => {
         rel="noopener noreferrer"
         className="link-btn"
       >
-        🔗 Open in YouTube
+        {item.is_youtube === false ? '🔗 View full clip' : '🔗 Open in YouTube'}
       </a>
     </div>
   )

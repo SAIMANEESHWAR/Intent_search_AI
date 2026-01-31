@@ -10,9 +10,19 @@ const api = axios.create({
 })
 
 export const videoAPI = {
-  // Process video
+  // Process video from YouTube URL
   processVideo: async (url) => {
     const response = await api.post('/process-video', { url })
+    return response.data
+  },
+
+  // Process multiple uploaded video clips
+  processClips: async (files) => {
+    const formData = new FormData()
+    for (const file of files) {
+      formData.append('files', file)
+    }
+    const response = await api.post('/process-clips', formData)
     return response.data
   },
 

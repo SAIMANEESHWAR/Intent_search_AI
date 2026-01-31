@@ -59,10 +59,12 @@ def load_captions_to_vector_db():
     embeddings = embedding_model.encode(captions).tolist()
     
     # Extract timestamps for metadata
+    # frame_0001.jpg -> [0001]; clip_001_frame_0001.jpg -> [001, 0001] - use last (frame num)
     timestamps = []
     for frame in frames:
         try:
-            frame_num = int(re.findall(r"\d+", frame)[0])
+            nums = re.findall(r"\d+", frame)
+            frame_num = int(nums[-1]) if nums else 0
             timestamp = frame_num / 5.0  # 5 FPS
             timestamps.append(timestamp)
         except:
@@ -129,16 +131,21 @@ def search_vector_db(query, top_k=10, threshold=0.4):
             
             if score < threshold:
                 continue
+
+            frame = metadata.get("frame", "")
+            m = re.match(r"clip_(\d+)_frame", frame)
+            clip_id = m.group(1) if m else "0"
             
             hits.append({
-                "frame": metadata.get("frame", ""),
+                "frame": frame,
                 "caption": doc,
                 "score": score,
-                "timestamp": metadata.get("timestamp", 0.0)
+                "timestamp": metadata.get("timestamp", 0.0),
+                "clip_id": clip_id
             })
         
-        # Sort by timestamp for clustering
-        hits.sort(key=lambda x: x["timestamp"])
+        # Sort by clip_id then timestamp for clustering (cluster within same clip)
+        hits.sort(key=lambda x: (x["clip_id"], x["timestamp"]))
         
         # Cluster hits (same logic as semantic_search.py)
         clips = []
@@ -149,7 +156,9 @@ def search_vector_db(query, top_k=10, threshold=0.4):
         GAP_THRESHOLD = 1.0
         
         for hit in hits[1:]:
-            if hit["timestamp"] - current_clip[-1]["timestamp"] <= GAP_THRESHOLD:
+            same_clip = hit["clip_id"] == current_clip[-1]["clip_id"]
+            time_gap_ok = hit["timestamp"] - current_clip[-1]["timestamp"] <= GAP_THRESHOLD
+            if same_clip and time_gap_ok:
                 current_clip.append(hit)
             else:
                 best_hit = max(current_clip, key=lambda x: x["score"])

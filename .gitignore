@@ -43,6 +43,7 @@ Thumbs.db
 *.part
 frames/
 clips/
+source_clips/
 captions.txt
 video.en.srt
 video.mp4.part

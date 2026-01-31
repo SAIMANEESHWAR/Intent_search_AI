@@ -63,7 +63,7 @@ def process_video_logic(youtube_url, update_status=default_logger):
 
         # 2. Update Configuration
         update_status("📝 Updating config...")
-        config = {"url": youtube_url}
+        config = {"mode": "youtube", "url": youtube_url}
         with open("video_config.json", "w") as f:
             json.dump(config, f, indent=4)
 

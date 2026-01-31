@@ -1,9 +1,11 @@
-from fastapi import FastAPI, BackgroundTasks
+import os
+from fastapi import FastAPI, BackgroundTasks, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from semantic_search import search_frames
 from intent_search import intent_search
 from process_video import process_video_logic
+from process_clips import process_clips_logic
 from pydantic import BaseModel
 
 # RAG imports
@@ -28,6 +30,9 @@ app = FastAPI()
 @app.on_event("startup")
 def startup():
     """Keep RAG ready: if vector DB is empty but captions exist, load them."""
+    os.makedirs("source_clips", exist_ok=True)
+    os.makedirs("clips", exist_ok=True)
+    os.makedirs("frames", exist_ok=True)
     if RAG_AVAILABLE and ensure_vector_db_loaded:
         ensure_vector_db_loaded()
 
@@ -63,6 +68,32 @@ def process_video_endpoint(req: VideoRequest, background_tasks: BackgroundTasks)
     background_tasks.add_task(process_video_logic, req.url, update_status)
     return {"status": "started"}
 
+
+@app.post("/process-clips")
+async def process_clips_endpoint(
+    background_tasks: BackgroundTasks,
+    files: list[UploadFile] = File(...)
+):
+    """Process multiple uploaded video clips. Accepts mp4, mov, webm, etc."""
+    global processing_status
+    if not files:
+        return {"error": "No files uploaded"}
+    # Validate and read file contents (must do before bg task - request body closes)
+    allowed = {".mp4", ".mov", ".webm", ".avi", ".mkv"}
+    file_data = []  # [(filename, bytes), ...]
+    for f in files:
+        ext = os.path.splitext(f.filename or "")[1].lower()
+        if ext in allowed:
+            content = await f.read()
+            file_data.append((f.filename or "video.mp4", content))
+        else:
+            print(f"Skipping {f.filename}: unsupported format")
+    if not file_data:
+        return {"error": "No valid video files (supported: mp4, mov, webm, avi, mkv)"}
+    processing_status = {"state": "starting", "message": f"Processing {len(file_data)} clip(s)..."}
+    background_tasks.add_task(process_clips_logic, file_data, update_status)
+    return {"status": "started", "file_count": len(file_data)}
+
 @app.get("/process-status")
 def get_status():
     return processing_status
@@ -71,6 +102,7 @@ def get_status():
 app.mount("/videos", StaticFiles(directory="."), name="videos")
 app.mount("/clips", StaticFiles(directory="clips"), name="clips")
 app.mount("/frames", StaticFiles(directory="frames"), name="frames")
+app.mount("/source_clips", StaticFiles(directory="source_clips"), name="source_clips")
 
 # ✅ CORS FIX
 app.add_middleware(
@@ -78,7 +110,10 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5500",
         "http://127.0.0.1:5500",
-        "http://[::]:5500"
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://[::]:5500",
+        "http://[::]:5173"
     ],
     allow_credentials=True,
     allow_methods=["*"],

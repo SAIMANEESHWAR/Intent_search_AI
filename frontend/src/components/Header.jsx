@@ -3,7 +3,7 @@ import { Film, Search, Sparkles } from 'lucide-react'
 const navLinks = [
   { href: '#load-video', label: 'Add video', icon: Film },
   { href: '#basic-search', label: 'Search', icon: Search },
-  { href: '#rag-search', label: 'Smart search', icon: Sparkles },
+  { href: '#rag-search', label: 'Multi modal search', icon: Sparkles },
 ]
 
 export default function Header() {
