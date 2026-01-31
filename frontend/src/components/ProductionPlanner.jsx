@@ -108,6 +108,7 @@ const ProductionPlanner = () => {
 
         {activeTab === 'budget' && <BudgetDashboard data={result} />}
         {activeTab === 'scenes' && <SceneBreakdown data={result} />}
+        {activeTab === 'risk' && <RiskDashboard data={result} />}
       </section>
     )
   }
