@@ -2,25 +2,27 @@ import { Film, Search, Sparkles, ClipboardList } from 'lucide-react'
 
 const navLinks = [
   { href: '#load-video', label: 'Add video', icon: Film },
-  { href: '#basic-search', label: 'Search', icon: Search },
+  { href: '#rag-search', label: 'Search', icon: Search },
   { href: '#rag-search', label: 'Smart search', icon: Sparkles },
   { href: '#production-planner', label: 'Production Planner', icon: ClipboardList },
 ]
 
 export default function Header() {
   return (
-    <header className="app-header">
+    <header className="app-header navbar-top">
       <div className="header-inner">
         <a href="#" className="header-logo">
           <span className="header-logo-icon">🎬</span>
-          <span className="header-logo-text">Semantic Video Search</span>
-          <span className="header-tagline">Add a video, then search with your words</span>
+          <div className="header-logo-text-block">
+            <span className="header-logo-text">Semantic Video Search</span>
+            <span className="header-tagline">Add a video, then search with your words</span>
+          </div>
         </a>
         <nav className="header-nav">
           {navLinks.map(({ href, label, icon: Icon }) => (
             <a key={href} href={href} className="header-nav-link">
-              <Icon className="header-nav-icon" size={18} />
-              {label}
+              <Icon className="header-nav-icon" size={22} />
+              <span className="header-nav-label">{label}</span>
             </a>
           ))}
         </nav>

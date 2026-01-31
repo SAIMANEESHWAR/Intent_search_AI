@@ -27,8 +27,8 @@ function App() {
         />
       </div>
       <div className="relative z-10">
-      <Hero />
       <Header />
+      <Hero />
       <div className="container">
         <main className="content">
           <VideoLoader />
